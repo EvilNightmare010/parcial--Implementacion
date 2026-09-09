@@ -1,0 +1,90 @@
+Table USER {
+    id_user bigint
+    username string
+    email string
+    password_hash string
+    role string
+    enabled boolean
+    created_at timestamp 
+  }
+  Table TEAM {
+    id_team bigint
+    name string
+    description string
+    created_at date
+    status string
+    coach_name string
+    max_members int
+    wins int
+    losses int
+  }
+  Table COMPETITOR {
+    id_competitor bigint
+    id_team bigint
+    name string
+    nickname string
+    type string
+    birth_date date
+    weight double
+    height double
+    origin_country string
+    status string
+    registered_at timestamp
+    wins int
+    losses int
+    races_completed int
+  }
+  Table TEAM_MEMBER {
+    id_member bigint
+    id_team bigint
+    id_competitor bigint
+    joined_at timestamp 
+  }
+  Table RACE {
+    id_race bigint 
+    id_organizer bigint
+    name_race string
+    description string
+    scheduled_at timestamp
+    start_location string
+    end_location string
+    distance_meters int
+    max_participants int
+    race_type string
+    status string
+    registration_deadline timestamp
+    created_at timestamp
+    updated_at timestamp
+  }
+  Table RACE_REGISTRATION {
+    id_registration bigint
+    race_id  bigint 
+    id_competitor bigint 
+    id_team bigint  
+    timestamp registered_at
+    status string 
+    starting_position int 
+    notes string 
+    registered_by bigint  
+  }
+  Table RACE_RESULT {
+    id_result bigint 
+    id_race bigint 
+    id_registration bigint 
+    starting_position int
+    final_position int
+    completion_time_seconds double 
+    penalty_time_seconds double 
+    status string 
+    notes string 
+    recorded_by bigint  
+    recorded_at timestamp 
+  }
+  Table AUDIT_LOG {
+    id_audit bigint 
+    id_user bigint  
+    action string 
+    entity_type string 
+    id_entity bigint 
+    created_at timestamp 
+}
