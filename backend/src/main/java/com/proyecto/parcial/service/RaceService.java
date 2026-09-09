@@ -19,6 +19,7 @@ public class RaceService {
 
     private final RaceRepository raceRepository;
     private final UserRepository userRepository;
+    private final AuditService auditService;
 
     public Race createRace(RaceRequest request, String organizerUsername) {
         // Regla de Negocio: La fecha límite de registro debe ser antes de la carrera
@@ -45,7 +46,17 @@ public class RaceService {
                 .registrationDeadline(request.getRegistrationDeadline())
                 .build();
 
-        return raceRepository.save(race);
+        // Guardamos la carrera primero, luego auditamos la acción, y finalmente retornamos
+        Race savedRace = raceRepository.save(race);
+
+        auditService.logAction(
+                organizer,
+                "CREATE_RACE",
+                "RACE",
+                savedRace.getIdRace()
+        );
+
+        return savedRace;
     }
 
     public List<Race> getAllRaces() {
