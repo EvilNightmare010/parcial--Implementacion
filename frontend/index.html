@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Camel vs. Dwarf Racing League</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ================= LOGIN (pantalla completa, sin nav) ================= -->
+  <section id="view-login" class="view">
+    <div class="auth-page">
+      <div class="auth-card">
+        <div class="logo">🐫 Camel vs. Dwarf Racing</div>
+        <div class="tagline">Inicia sesión para gestionar la liga</div>
+        <div id="sessionExpiredMsg" style="display:none" class="field-error">Tu sesión expiró. Vuelve a iniciar sesión.</div>
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label for="loginUsername">Usuario</label>
+            <input type="text" id="loginUsername" required autocomplete="username" />
+            <div class="field-error" id="loginUsernameError"></div>
+          </div>
+          <div class="field">
+            <label for="loginPassword">Contraseña</label>
+            <input type="password" id="loginPassword" required autocomplete="current-password" />
+            <div class="field-error" id="loginPasswordError"></div>
+          </div>
+          <div class="field-error" id="loginFormError"></div>
+          <button type="submit" class="btn btn--primary btn--full" id="loginBtn">Ingresar</button>
+        </form>
+        <p class="muted" style="margin-top:16px;text-align:center">
+          El administrador se crea una sola vez desde <code>POST /api/auth/register</code>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= APP (con nav, el resto de vistas) ================= -->
+  <div id="app-shell" style="display:none">
+    <div id="nav"></div>
+
+    <!-- ---- DASHBOARD ---- -->
+    <section id="view-dashboard" class="view">
+      <main class="page">
+        <div class="page-header">
+          <div>
+            <h1>Bienvenida, <span id="dashWelcomeName"></span> 👋</h1>
+            <p>Resumen general de la liga de carreras.</p>
+          </div>
+        </div>
+        <div class="grid grid--3" style="margin-bottom:24px">
+          <div class="card stat"><div class="num" id="dashStatCompetitors">—</div><div class="label">Competidores activos</div></div>
+          <div class="card stat"><div class="num" id="dashStatRaces">—</div><div class="label">Carreras próximas</div></div>
+          <div class="card stat"><div class="num" id="dashStatTeams">—</div><div class="label">Equipos registrados</div></div>
+        </div>
+        <div class="grid grid--2">
+          <div class="card"><h2>Próximas carreras</h2><div id="dashUpcomingRaces"></div></div>
+          <div class="card"><h2>Resultados recientes</h2><div id="dashRecentResults"></div></div>
+        </div>
+      </main>
+    </section>
+
+    <!-- ---- COMPETITORS ---- -->
+    <section id="view-competitors" class="view">
+      <main class="page">
+        <div class="page-header">
+          <div><h1>Competidores</h1><p>Dwarfs, camellos y demás competidores de la liga.</p></div>
+          <button class="btn btn--primary" id="compNewBtn" style="display:none">+ Nuevo competidor</button>
+        </div>
+        <div class="card">
+          <div class="toolbar">
+            <div class="field" style="margin:0;min-width:220px"><input type="text" id="compSearchInput" placeholder="Buscar por nombre o apodo..." /></div>
+            <div class="field" style="margin:0">
+              <select id="compTypeFilter">
+                <option value="">Todos los tipos</option>
+                <option value="DWARF">Dwarf</option><option value="CAMEL">Camel</option>
+                <option value="MEDIUM">Medium</option><option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div class="field" style="margin:0">
+              <select id="compStatusFilter">
+                <option value="">Todos los estados</option>
+                <option value="ACTIVE">Active</option><option value="INJURED">Injured</option>
+                <option value="SUSPENDED">Suspended</option><option value="RETIRED">Retired</option>
+              </select>
+            </div>
+            <button class="btn btn--ghost btn--small" id="compClearFiltersBtn">Limpiar</button>
+          </div>
+          <div class="table-wrap" id="compTableContainer"></div>
+          <div class="toolbar" style="justify-content:center;margin-top:16px">
+            <button class="btn btn--ghost btn--small" id="compPrevPageBtn">‹ Anterior</button>
+            <span class="muted" id="compPageIndicator"></span>
+            <button class="btn btn--ghost btn--small" id="compNextPageBtn">Siguiente ›</button>
+          </div>
+        </div>
+      </main>
+
+      <div id="compFormModal" class="modal-overlay" style="display:none">
+        <div class="modal" style="max-width:480px">
+          <h3 id="compFormTitle">Nuevo competidor</h3>
+          <form id="compForm" novalidate>
+            <input type="hidden" id="compId" />
+            <div class="form-row">
+              <div class="field"><label for="compName">Nombre *</label><input type="text" id="compName" required /><div class="field-error" id="compNameError"></div></div>
+              <div class="field"><label for="compNickname">Apodo (único) *</label><input type="text" id="compNickname" required /><div class="field-error" id="compNicknameError"></div></div>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label for="compType">Tipo *</label>
+                <select id="compType" required>
+                  <option value="DWARF">Dwarf</option><option value="CAMEL">Camel</option>
+                  <option value="MEDIUM">Medium</option><option value="OTHER">Other</option>
+                </select>
+              </div>
+              <div class="field"><label for="compBirthDate">Fecha de nacimiento</label><input type="date" id="compBirthDate" /></div>
+            </div>
+            <div class="form-row">
+              <div class="field"><label for="compWeight">Peso (kg) *</label><input type="number" step="0.1" min="0.1" id="compWeight" required /><div class="field-error" id="compWeightError"></div></div>
+              <div class="field"><label for="compHeight">Altura (m) *</label><input type="number" step="0.01" min="0.01" id="compHeight" required /><div class="field-error" id="compHeightError"></div></div>
+            </div>
+            <div class="field"><label for="compOriginCountry">País / lugar de origen</label><input type="text" id="compOriginCountry" /></div>
+            <div class="field-error" id="compFormError"></div>
+            <div class="modal-actions">
+              <button type="button" class="btn btn--ghost" id="compCancelFormBtn">Cancelar</button>
+              <button type="submit" class="btn btn--primary" id="compSaveBtn">Guardar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- TEAMS ---- -->
+    <section id="view-teams" class="view">
+      <main class="page">
+        <div class="page-header">
+          <div><h1>Equipos</h1><p>Equipos registrados y sus integrantes.</p></div>
+          <button class="btn btn--primary" id="teamNewBtn" style="display:none">+ Nuevo equipo</button>
+        </div>
+        <div class="card"><div class="table-wrap" id="teamTableContainer"></div></div>
+      </main>
+
+      <div id="teamFormModal" class="modal-overlay" style="display:none">
+        <div class="modal" style="max-width:420px">
+          <h3>Nuevo equipo</h3>
+          <form id="teamForm" novalidate>
+            <div class="field"><label for="teamName">Nombre (único) *</label><input type="text" id="teamName" required /><div class="field-error" id="teamNameError"></div></div>
+            <div class="field"><label for="teamCoachName">Entrenador / responsable</label><input type="text" id="teamCoachName" /></div>
+            <div class="field"><label for="teamMaxMembers">Máximo de miembros *</label><input type="number" id="teamMaxMembers" min="1" value="5" required /></div>
+            <div class="field"><label for="teamDescription">Descripción</label><textarea id="teamDescription" rows="2"></textarea></div>
+            <div class="field-error" id="teamFormError"></div>
+            <div class="modal-actions">
+              <button type="button" class="btn btn--ghost" id="teamCancelFormBtn">Cancelar</button>
+              <button type="submit" class="btn btn--primary" id="teamSaveBtn">Guardar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="teamMembersModal" class="modal-overlay" style="display:none">
+        <div class="modal" style="max-width:480px">
+          <h3 id="teamMembersTitle">Miembros del equipo</h3>
+          <div id="teamMembersList" class="muted">Cargando...</div>
+          <div class="field" id="teamAddMemberField" style="margin-top:14px">
+            <label for="teamAddMemberSelect">Agregar competidor</label>
+            <div style="display:flex;gap:8px">
+              <select id="teamAddMemberSelect" style="flex:1"></select>
+              <button class="btn btn--secondary btn--small" id="teamAddMemberBtn">Agregar</button>
+            </div>
+          </div>
+          <div class="modal-actions"><button type="button" class="btn btn--ghost" id="teamCloseMembersBtn">Cerrar</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- RACES (lista) ---- -->
+    <section id="view-races" class="view">
+      <main class="page">
+        <div class="page-header">
+          <div><h1>Carreras</h1><p>Todas las carreras programadas por la liga.</p></div>
+          <button class="btn btn--primary" id="raceNewBtn" style="display:none">+ Nueva carrera</button>
+        </div>
+        <div class="card"><div class="table-wrap" id="raceTableContainer"></div></div>
+      </main>
+
+      <div id="raceFormModal" class="modal-overlay" style="display:none">
+        <div class="modal" style="max-width:520px">
+          <h3>Nueva carrera</h3>
+          <form id="raceForm" novalidate>
+            <div class="field"><label for="raceName">Nombre *</label><input type="text" id="raceName" required /><div class="field-error" id="raceNameError"></div></div>
+            <div class="form-row">
+              <div class="field">
+                <label for="raceType">Tipo *</label>
+                <select id="raceType"><option value="INDIVIDUAL">Individual</option><option value="TEAM">Equipo</option><option value="MIXED">Mixta</option></select>
+              </div>
+              <div class="field"><label for="raceDistance">Distancia (m) *</label><input type="number" id="raceDistance" min="1" required /><div class="field-error" id="raceDistanceError"></div></div>
+            </div>
+            <div class="form-row">
+              <div class="field"><label for="raceScheduledAt">Fecha y hora de la carrera *</label><input type="datetime-local" id="raceScheduledAt" required /></div>
+              <div class="field"><label for="raceRegistrationDeadline">Cierre de inscripciones *</label><input type="datetime-local" id="raceRegistrationDeadline" required /></div>
+            </div>
+            <div class="form-row">
+              <div class="field"><label for="raceStartLocation">Punto de partida</label><input type="text" id="raceStartLocation" /></div>
+              <div class="field"><label for="raceEndLocation">Punto de llegada</label><input type="text" id="raceEndLocation" /></div>
+            </div>
+            <div class="field"><label for="raceMaxParticipants">Máximo de participantes *</label><input type="number" id="raceMaxParticipants" min="2" value="10" required /></div>
+            <div class="field-error" id="raceFormError"></div>
+            <div class="modal-actions">
+              <button type="button" class="btn btn--ghost" id="raceCancelFormBtn">Cancelar</button>
+              <button type="submit" class="btn btn--primary" id="raceSaveBtn">Guardar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- RACE DETAIL ---- -->
+    <section id="view-race-detail" class="view">
+      <main class="page">
+        <a href="#/races" class="muted">‹ Volver a carreras</a>
+        <div id="rdHeader" class="card" style="margin:16px 0">Cargando...</div>
+        <div class="tabs">
+          <div class="tab tab--active" data-tab="registrations">Inscripciones</div>
+          <div class="tab" data-tab="results">Resultados</div>
+        </div>
+        <div class="tab-panel tab-panel--active" id="rd-panel-registrations">
+          <div class="card">
+            <div class="toolbar"><h2 style="margin:0;flex:1">Inscripciones</h2></div>
+            <div id="rdRegistrationsBox" class="table-wrap"></div>
+          </div>
+        </div>
+        <div class="tab-panel" id="rd-panel-results">
+          <div class="card">
+            <div class="toolbar">
+              <h2 style="margin:0;flex:1">Resultados</h2>
+              <button class="btn btn--primary btn--small" id="rdAddResultBtn" style="display:none">+ Registrar resultado</button>
+            </div>
+            <div id="rdResultsBox" class="table-wrap"></div>
+          </div>
+        </div>
+      </main>
+
+      <div id="rdResultModal" class="modal-overlay" style="display:none">
+        <div class="modal" style="max-width:420px">
+          <h3>Registrar resultado</h3>
+          <form id="rdResultForm" novalidate>
+            <div class="field"><label for="rdResultRegistration">Participante (inscripción aprobada) *</label><select id="rdResultRegistration" required></select></div>
+            <div class="form-row">
+              <div class="field"><label for="rdFinalPosition">Posición final</label><input type="number" id="rdFinalPosition" min="1" /></div>
+              <div class="field"><label for="rdCompletionTime">Tiempo (segundos)</label><input type="number" step="0.01" id="rdCompletionTime" /></div>
+            </div>
+            <div class="field">
+              <label for="rdResultStatus">Estado *</label>
+              <select id="rdResultStatus" required>
+                <option value="FINISHED">Finalizó</option><option value="DISQUALIFIED">Descalificado</option>
+                <option value="DID_NOT_FINISH">No terminó</option><option value="DID_NOT_START">No arrancó</option>
+              </select>
+            </div>
+            <div class="field"><label for="rdResultNotes">Notas</label><textarea id="rdResultNotes" rows="2"></textarea></div>
+            <div class="field-error" id="rdResultFormError"></div>
+            <div class="modal-actions">
+              <button type="button" class="btn btn--ghost" id="rdCancelResultFormBtn">Cancelar</button>
+              <button type="submit" class="btn btn--primary" id="rdSaveResultBtn">Guardar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- STANDINGS ---- -->
+    <section id="view-standings" class="view">
+      <main class="page">
+        <div class="page-header"><div><h1>Clasificación</h1><p>Puntos acumulados por competidores y equipos.</p></div></div>
+        <div class="tabs">
+          <div class="tab tab--active" data-tab="standings-competitors">Competidores</div>
+          <div class="tab" data-tab="standings-teams">Equipos</div>
+        </div>
+        <div class="tab-panel tab-panel--active" id="panel-standings-competitors">
+          <div class="card"><div class="table-wrap" id="standCompetitorBox"></div></div>
+        </div>
+        <div class="tab-panel" id="panel-standings-teams">
+          <div class="card"><div class="table-wrap" id="standTeamBox"></div></div>
+        </div>
+      </main>
+    </section>
+
+    <!-- ---- PROFILE ---- -->
+    <section id="view-profile" class="view">
+      <main class="page" style="max-width:520px">
+        <h1>Mi perfil</h1>
+        <div class="card">
+          <div class="field"><label>Usuario</label><p id="profileUsername"></p></div>
+          <div class="field"><label>Rol</label><p id="profileRole"></p></div>
+          <button class="btn btn--danger" id="profileLogoutBtn">Cerrar sesión</button>
+        </div>
+      </main>
+    </section>
+
+    <!-- ---- ERRORS ---- -->
+    <section id="view-403" class="view">
+      <div class="error-page">
+        <div class="code">403</div>
+        <h1>No tienes permiso para ver esto</h1>
+        <p class="muted">Tu rol actual no incluye acceso a esta sección de la liga.</p>
+        <a class="btn btn--primary" href="#/dashboard">Volver al inicio</a>
+      </div>
+    </section>
+
+    <section id="view-404" class="view">
+      <div class="error-page">
+        <div class="code">404</div>
+        <h1>Esta pista de carreras no existe</h1>
+        <p class="muted">La página que buscas no fue encontrada.</p>
+        <a class="btn btn--primary" href="#/dashboard">Volver al inicio</a>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/views/login.js"></script>
+  <script src="js/views/dashboard.js"></script>
+  <script src="js/views/competitors.js"></script>
+  <script src="js/views/teams.js"></script>
+  <script src="js/views/races.js"></script>
+  <script src="js/views/raceDetail.js"></script>
+  <script src="js/views/standings.js"></script>
+  <script src="js/views/profile.js"></script>
+  <script src="js/router.js"></script>
+</body>
+</html>
