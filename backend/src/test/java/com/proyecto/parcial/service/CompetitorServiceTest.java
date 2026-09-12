@@ -1,22 +1,26 @@
 package com.proyecto.parcial.service;
 
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.proyecto.parcial.dto.CompetitorRequest;
 import com.proyecto.parcial.entity.Competitor;
 import com.proyecto.parcial.enums.CompetitorType;
 import com.proyecto.parcial.exception.BusinessRuleException;
 import com.proyecto.parcial.exception.ResourceNotFoundException;
 import com.proyecto.parcial.repository.CompetitorRepository;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CompetitorServiceTest {
@@ -65,4 +69,46 @@ class CompetitorServiceTest {
 
         assertTrue(exception.getMessage().contains("No se encontró"));
     }
+
+        // Test 17: Rechazar un competidor con peso inválido
+    @Test
+    void createCompetitor_InvalidWeight_ThrowsException() {
+        CompetitorRequest request = new CompetitorRequest(
+                "Tiny Docker",
+                "El Liviano",
+                CompetitorType.DWARF,
+                null,
+                0.0,
+                1.35,
+                "Colombia"
+        );
+
+        when(competitorRepository.findByNickname("El Liviano"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(BusinessRuleException.class, () -> {
+            competitorService.createCompetitor(request);
+        });
+    }
+
+    // Test 18: Rechazar un competidor con altura inválida
+@Test
+void createCompetitor_InvalidHeight_ThrowsException() {
+    CompetitorRequest request = new CompetitorRequest(
+        "Invalid Height",
+        "Altura Negativa",
+        CompetitorType.CAMEL,
+        null,
+        65.0,
+        -2.0,
+        "Colombia"
+    );
+
+    BusinessRuleException exception = assertThrows(
+        BusinessRuleException.class,
+        () -> competitorService.createCompetitor(request)
+    );
+
+    assertTrue(exception.getMessage().contains("altura"));
+}
 }

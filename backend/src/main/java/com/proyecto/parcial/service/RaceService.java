@@ -1,5 +1,9 @@
 package com.proyecto.parcial.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.proyecto.parcial.dto.RaceRequest;
 import com.proyecto.parcial.entity.Race;
 import com.proyecto.parcial.entity.User;
@@ -8,10 +12,8 @@ import com.proyecto.parcial.exception.BusinessRuleException;
 import com.proyecto.parcial.exception.ResourceNotFoundException;
 import com.proyecto.parcial.repository.RaceRepository;
 import com.proyecto.parcial.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +24,11 @@ public class RaceService {
     private final AuditService auditService;
 
     public Race createRace(RaceRequest request, String organizerUsername) {
+
+        // Regla de negocio: La carrera debe estar programada en el futuro
+        if (request.getScheduledAt().isBefore(java.time.LocalDateTime.now())) {
+        throw new BusinessRuleException("La carrera debe estar programada para una fecha futura.");
+}
         // Regla de Negocio: La fecha límite de registro debe ser antes de la carrera
         if (request.getRegistrationDeadline().isAfter(request.getScheduledAt()) || 
             request.getRegistrationDeadline().isEqual(request.getScheduledAt())) {
