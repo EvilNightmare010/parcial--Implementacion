@@ -102,20 +102,3 @@ En Windows también puedes utilizar:
 ```powershell
 .\mvnw.cmd test
 ```
-
-## 📡 Ejemplos de Petición API
-
-### Autenticación (login)
-
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
-	-H "Content-Type: application/json" \
-	-d '{"username":"organizer","password":"org123"}'
-```
-
-### Consulta de competidores con filtros
-
-```bash
-curl -X GET "http://localhost:8080/api/competitors?status=ACTIVE&page=0&size=10" \
-	-H "Authorization: Bearer <TOKEN_JWT>"
-```
