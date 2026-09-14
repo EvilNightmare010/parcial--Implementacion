@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,7 +37,7 @@ public class GlobalExceptionHandler {
 
     private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String error, String message, String path) {
         Map<String, Object> response = new LinkedHashMap<>(); // LinkedHashMap mantiene el orden exacto
-        response.put("timestamp", LocalDateTime.now());
+        response.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
         response.put("status", status.value());
         response.put("error", error);
         response.put("message", message);
