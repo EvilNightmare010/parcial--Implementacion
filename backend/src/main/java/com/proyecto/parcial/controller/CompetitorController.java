@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/competitors")
@@ -31,5 +32,15 @@ public class CompetitorController {
     @GetMapping("/{id}")
     public ResponseEntity<Competitor> getCompetitorById(@PathVariable Long id) {
         return ResponseEntity.ok(competitorService.getCompetitorById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Competitor> updateCompetitor(@PathVariable Long id, @Valid @RequestBody CompetitorRequest request) {
+        return ResponseEntity.ok(competitorService.updateCompetitor(id, request));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Competitor> updateCompetitorStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        return ResponseEntity.ok(competitorService.updateStatus(id, payload.get("status")));
     }
 }

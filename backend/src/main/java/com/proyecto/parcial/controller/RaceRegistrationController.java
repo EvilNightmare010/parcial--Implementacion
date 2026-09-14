@@ -9,23 +9,41 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/races")
+@RequestMapping("/api") // Se cambia a /api para soportar ambas rutas del módulo
 @RequiredArgsConstructor
 public class RaceRegistrationController {
 
     private final RaceRegistrationService registrationService;
 
-    @PostMapping("/{raceId}/registrations")
+    @PostMapping("/races/{raceId}/registrations")
     public ResponseEntity<RaceRegistration> register(
             @PathVariable Long raceId, 
             @RequestBody RegistrationRequest request, 
             Principal principal) {
         
-        // Aseguramos que el ID de la URL sea el que se procesa
         request.setRaceId(raceId);
-        
         return new ResponseEntity<>(registrationService.registerParticipant(request, principal.getName()), HttpStatus.CREATED);
+    }
+
+    // NUEVO: Listar las inscripciones de una carrera (Evita el 405 Method Not Allowed)
+    @GetMapping("/races/{raceId}/registrations")
+    public ResponseEntity<List<RaceRegistration>> getRegistrationsByRace(@PathVariable Long raceId) {
+        return ResponseEntity.ok(registrationService.getRegistrationsByRaceId(raceId));
+    }
+
+    // NUEVO: Aprobar o rechazar (Usado por los botones del Organizador)
+    @PatchMapping("/registrations/{id}/{action}")
+    public ResponseEntity<RaceRegistration> decideRegistration(
+            @PathVariable Long id, 
+            @PathVariable String action,
+            @RequestBody(required = false) Map<String, String> payload,
+            Principal principal) {
+            
+        String reason = (payload != null) ? payload.get("reason") : null;
+        return ResponseEntity.ok(registrationService.decideRegistration(id, action, reason, principal.getName()));
     }
 }

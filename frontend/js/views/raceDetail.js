@@ -51,7 +51,8 @@ const RaceDetail = (() => {
         <table>
           <thead><tr><th>Participante</th><th>Fecha</th><th>Estado</th>${canManage ? "<th></th>" : ""}</tr></thead>
           <tbody>${list.map((r) => {
-            const id = r.id_registration ?? r.id;
+            // CORRECCIÓN: Extractor agresivo de ID de la inscripción
+            const id = r.id ?? r.registrationId ?? r.id_registration ?? Object.values(r)[0];
             const label = r.competitor_name ?? r.competitorName ?? r.team_name ?? r.teamName ?? "—";
             return `<tr>
               <td>${label}</td>
@@ -66,7 +67,7 @@ const RaceDetail = (() => {
         </table>`;
 
       list.forEach((r) => {
-        const id = r.id_registration ?? r.id;
+        const id = r.id ?? r.registrationId ?? r.id_registration ?? Object.values(r)[0];
         const approveBtn = document.getElementById(`rd-approve-${id}`);
         const rejectBtn = document.getElementById(`rd-reject-${id}`);
         if (approveBtn) approveBtn.onclick = () => decide(id, "approve");
@@ -137,7 +138,7 @@ const RaceDetail = (() => {
       const res = await API.get(`/races/${raceId}/registrations`);
       const list = (res.content || res).filter((r) => r.status === "APPROVED");
       select.innerHTML = list.map((r) => {
-        const id = r.id_registration ?? r.id;
+        const id = r.id ?? r.registrationId ?? r.id_registration ?? Object.values(r)[0];
         const label = r.competitor_name ?? r.competitorName ?? r.team_name ?? r.teamName ?? `#${id}`;
         return `<option value="${id}">${label}</option>`;
       }).join("") || `<option value="">No hay inscripciones aprobadas</option>`;

@@ -1,5 +1,5 @@
 const Competitors = (() => {
-  const state = { page: 0, size: 10, search: "", type: "", status: "" };
+  const state = { page: 0, size: 10, search: "", type: "", status: "", totalPages: 0 };
   let debounceTimer;
 
   function init() {
@@ -10,16 +10,21 @@ const Competitors = (() => {
     document.getElementById("compCancelFormBtn").onclick = closeForm;
     document.getElementById("compForm").onsubmit = save;
 
+    // Buscador en tiempo real
     document.getElementById("compSearchInput").oninput = (e) => {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
-        state.search = e.target.value.trim();
+        state.search = e.target.value.trim().toLowerCase();
         state.page = 0;
         load();
       }, 350);
     };
+    
+    // Selectores
     document.getElementById("compTypeFilter").onchange = (e) => { state.type = e.target.value; state.page = 0; load(); };
     document.getElementById("compStatusFilter").onchange = (e) => { state.status = e.target.value; state.page = 0; load(); };
+    
+    // Botón Limpiar
     document.getElementById("compClearFiltersBtn").onclick = () => {
       state.search = ""; state.type = ""; state.status = ""; state.page = 0;
       document.getElementById("compSearchInput").value = "";
@@ -27,8 +32,14 @@ const Competitors = (() => {
       document.getElementById("compStatusFilter").value = "";
       load();
     };
-    document.getElementById("compPrevPageBtn").onclick = () => { if (state.page > 0) { state.page--; load(); } };
-    document.getElementById("compNextPageBtn").onclick = () => { state.page++; load(); };
+
+    // Paginación
+    document.getElementById("compPrevPageBtn").onclick = () => { 
+      if (state.page > 0) { state.page--; load(); } 
+    };
+    document.getElementById("compNextPageBtn").onclick = () => { 
+      if (state.page < state.totalPages - 1) { state.page++; load(); } 
+    };
 
     load();
   }
@@ -37,16 +48,33 @@ const Competitors = (() => {
     const container = document.getElementById("compTableContainer");
     UI.setLoading(container, true);
 
-    const params = new URLSearchParams({ page: state.page, size: state.size });
-    if (state.search) params.set("search", state.search);
-    if (state.type) params.set("type", state.type);
-    if (state.status) params.set("status", state.status);
-
     try {
-      const res = await API.get(`/competitors?${params.toString()}`);
-      const list = res.content || res;
+      const res = await API.get(`/competitors?size=1000`);
+      let list = res.content || res;
 
-      if (!list.length) {
+      if (state.search) {
+        list = list.filter(c => 
+          (c.name && c.name.toLowerCase().includes(state.search)) || 
+          (c.nickname && c.nickname.toLowerCase().includes(state.search))
+        );
+      }
+      if (state.type) {
+        list = list.filter(c => c.type === state.type);
+      }
+      if (state.status) {
+        list = list.filter(c => c.status === state.status);
+      }
+
+      state.totalPages = Math.ceil(list.length / state.size);
+      
+      if (state.page >= state.totalPages && state.totalPages > 0) {
+          state.page = state.totalPages - 1;
+      }
+
+      const startIndex = state.page * state.size;
+      const paginatedList = list.slice(startIndex, startIndex + state.size);
+
+      if (!paginatedList.length) {
         UI.setEmpty(container, "No se encontraron competidores con estos filtros.");
         document.getElementById("compPageIndicator").textContent = "";
         return;
@@ -56,18 +84,33 @@ const Competitors = (() => {
       container.innerHTML = `
         <table>
           <thead><tr><th>Nombre</th><th>Apodo</th><th>Tipo</th><th>Estado</th><th>País</th>${isAdmin ? "<th></th>" : ""}</tr></thead>
-          <tbody>${list.map((c) => rowHtml(c, isAdmin)).join("")}</tbody>
+          <tbody>${paginatedList.map((c, index) => rowHtml(c, isAdmin, index)).join("")}</tbody>
         </table>`;
 
-      document.getElementById("compPageIndicator").textContent = `Página ${state.page + 1}${res.totalPages ? " de " + res.totalPages : ""}`;
+      document.getElementById("compPageIndicator").textContent = `Página ${state.page + 1}${state.totalPages ? " de " + state.totalPages : ""}`;
 
+      // Asignación de los nuevos botones
       if (isAdmin) {
-        list.forEach((c) => {
-          const id = c.id_competitor ?? c.id;
-          const editBtn = document.getElementById(`comp-edit-${id}`);
-          const retireBtn = document.getElementById(`comp-retire-${id}`);
+        paginatedList.forEach((c, index) => {
+          const editBtn = document.getElementById(`comp-edit-${index}`);
+          const retireBtn = document.getElementById(`comp-retire-${index}`);
+          const suspendBtn = document.getElementById(`comp-suspend-${index}`);
+          const injureBtn = document.getElementById(`comp-injure-${index}`);
+          const recoverBtn = document.getElementById(`comp-recover-${index}`);
+
           if (editBtn) editBtn.onclick = () => openForm(c);
-          if (retireBtn) retireBtn.onclick = () => retire(c);
+          
+          if (retireBtn) retireBtn.onclick = () => 
+            updateStatus(c, "RETIRED", `¿Seguro que quieres retirar a "${c.name}"? Esta acción es permanente.`, "Competidor retirado.");
+            
+          if (suspendBtn) suspendBtn.onclick = () => 
+            updateStatus(c, "SUSPENDED", `¿Seguro que quieres suspender a "${c.name}"? Esta acción es permanente.`, "Competidor suspendido.");
+            
+          if (injureBtn) injureBtn.onclick = () => 
+            updateStatus(c, "INJURED", `¿Marcar a "${c.name}" como lesionado?`, "Competidor marcado como lesionado.");
+            
+          if (recoverBtn) recoverBtn.onclick = () => 
+            updateStatus(c, "ACTIVE", `¿Marcar a "${c.name}" como recuperado (Activo)?`, "Competidor recuperado.");
         });
       }
     } catch (err) {
@@ -75,21 +118,39 @@ const Competitors = (() => {
     }
   }
 
-  function rowHtml(c, isAdmin) {
-    const id = c.id_competitor ?? c.id;
+  function rowHtml(c, isAdmin, index) {
+    let actionButtons = "";
+    if (isAdmin) {
+      actionButtons += `<button class="btn btn--ghost btn--small" id="comp-edit-${index}">Editar</button> `;
+
+      // Reglas de negocio para los botones de estado
+      if (c.status !== "RETIRED" && c.status !== "SUSPENDED") {
+        
+        // Toggle de Lesión
+        if (c.status === "ACTIVE") {
+          actionButtons += `<button class="btn btn--ghost btn--small" id="comp-injure-${index}">Lesionar</button> `;
+        } else if (c.status === "INJURED") {
+          actionButtons += `<button class="btn btn--ghost btn--small" id="comp-recover-${index}">Recuperar</button> `;
+        }
+        
+        // Acciones definitivas
+        actionButtons += `<button class="btn btn--ghost btn--small" id="comp-suspend-${index}">Suspender</button> `;
+        actionButtons += `<button class="btn btn--ghost btn--small" id="comp-retire-${index}">Retirar</button>`;
+      }
+    }
+
     return `<tr>
       <td>${c.name}</td><td>${c.nickname}</td><td>${c.type}</td>
       <td>${UI.badge(c.status)}</td><td>${c.origin_country ?? c.originCountry ?? "—"}</td>
-      ${isAdmin ? `<td class="row-actions">
-          <button class="btn btn--ghost btn--small" id="comp-edit-${id}">Editar</button>
-          ${c.status !== "RETIRED" ? `<button class="btn btn--ghost btn--small" id="comp-retire-${id}">Retirar</button>` : ""}
-        </td>` : ""}
+      ${isAdmin ? `<td class="row-actions">${actionButtons}</td>` : ""}
     </tr>`;
   }
 
   function openForm(c) {
     document.getElementById("compFormTitle").textContent = c ? "Editar competidor" : "Nuevo competidor";
-    document.getElementById("compId").value = c ? (c.id_competitor ?? c.id) : "";
+    
+    document.getElementById("compId").value = c ? (c.id ?? c.competitorId ?? c.id_competitor ?? Object.values(c)[0]) : "";
+    
     document.getElementById("compName").value = c?.name ?? "";
     document.getElementById("compNickname").value = c?.nickname ?? "";
     document.getElementById("compType").value = c?.type ?? "DWARF";
@@ -142,14 +203,15 @@ const Competitors = (() => {
     }
   }
 
-  async function retire(c) {
-    const id = c.id_competitor ?? c.id;
-    const ok = await UI.confirm("Retirar competidor", `¿Seguro que quieres retirar a "${c.name}"? No se elimina, solo cambia su estado.`);
+  // FUNCIÓN MAESTRA DE ESTADOS
+  async function updateStatus(c, newStatus, confirmMessage, successMessage) {
+    const id = c.id ?? c.competitorId ?? c.id_competitor ?? Object.values(c)[0];
+    const ok = await UI.confirm("Cambiar estado", confirmMessage);
     if (!ok) return;
     try {
-      await API.patch(`/competitors/${id}/status`, { status: "RETIRED" });
-      UI.success("Competidor retirado.");
-      load();
+      await API.patch(`/competitors/${id}/status`, { status: newStatus });
+      UI.success(successMessage);
+      load(); // Recarga la tabla para reflejar el cambio y redibujar los botones
     } catch (err) {
       UI.error(UI.friendlyError(err));
     }

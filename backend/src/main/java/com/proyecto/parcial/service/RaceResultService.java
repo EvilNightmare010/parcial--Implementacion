@@ -9,6 +9,8 @@ import com.proyecto.parcial.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class RaceResultService {
@@ -31,7 +33,7 @@ public class RaceResultService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         // Regla: Un descalificado no puede ganar (No puede ser posición 1)
-        if (request.getStatus() == ResultStatus.DISQUALIFIED && request.getFinalPosition() == 1) {
+        if (request.getStatus() == ResultStatus.DISQUALIFIED && request.getFinalPosition() != null && request.getFinalPosition() == 1) {
             throw new BusinessRuleException("Un participante descalificado no puede obtener el primer lugar.");
         }
 
@@ -53,7 +55,7 @@ public class RaceResultService {
             Competitor competitor = registration.getCompetitor();
             competitor.setRacesCompleted(competitor.getRacesCompleted() + 1);
             
-            if (request.getFinalPosition() == 1 && request.getStatus() == ResultStatus.FINISHED) {
+            if (request.getFinalPosition() != null && request.getFinalPosition() == 1 && request.getStatus() == ResultStatus.FINISHED) {
                 competitor.setWins(competitor.getWins() + 1);
             } else {
                 competitor.setLosses(competitor.getLosses() + 1);
@@ -62,5 +64,9 @@ public class RaceResultService {
         }
 
         return resultRepository.save(result);
+    }
+
+    public List<RaceResult> getResultsByRaceId(Long raceId) {
+        return resultRepository.findByRaceId(raceId);
     }
 }

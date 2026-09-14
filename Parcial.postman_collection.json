@@ -1,0 +1,350 @@
+{
+  "info": {
+    "_postman_id": "9f66418e-8c09-4d53-b264-979959da82f8",
+    "name": "Parcial",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "42798236"
+  },
+  "item": [
+    {
+      "name": "http://localhost:8080/api/auth/register",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"admin_abandonado\",\r\n    \"email\": \"admin@eia.edu.co\",\r\n    \"password\": \"superpassword123\",\r\n    \"role\": \"ADMINISTRATOR\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8080/api/auth/login",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"admin_abandonado\",\r\n    \"password\": \"superpassword123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8080/api/auth/register",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"organizador_estrella\",\r\n    \"email\": \"organizador@eia.edu.co\",\r\n    \"password\": \"superpassword123\",\r\n    \"role\": \"ORGANIZER\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8080/api/competitors",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbl9hYmFuZG9uYWRvIiwiaWF0IjoxNzg4OTEzOTUwLCJleHAiOjE3ODkwMDAzNTB9.IPqn5otDsI78GRTjBq9ft4XE9tZG33_lNyVuC2Y099w",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Little Lambda\",\r\n    \"nickname\": \"El Funcional\",\r\n    \"type\": \"DWARF\",\r\n    \"birthDate\": \"1995-10-08\",\r\n    \"weight\": -10.0,\r\n    \"height\": 1.35,\r\n    \"originCountry\": \"Colombia\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/competitors",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "competitors"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8080/api/teams",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbl9hYmFuZG9uYWRvIiwiaWF0IjoxNzg4OTEzOTUwLCJleHAiOjE3ODkwMDAzNTB9.IPqn5otDsI78GRTjBq9ft4XE9tZG33_lNyVuC2Y099w",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"The Five Exceptions\",\r\n    \"description\": \"El equipo más temido del compilador\",\r\n    \"coachName\": \"Instructor Sebastian\",\r\n    \"maxMembers\": 5\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/teams",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "teams"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8080/api/teams/1/members/2",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbl9hYmFuZG9uYWRvIiwiaWF0IjoxNzg4OTEzOTUwLCJleHAiOjE3ODkwMDAzNTB9.IPqn5otDsI78GRTjBq9ft4XE9tZG33_lNyVuC2Y099w",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/teams/1/members/2",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "teams",
+            "1",
+            "members",
+            "2"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8080/api/races",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbl9hYmFuZG9uYWRvIiwiaWF0IjoxNzg4OTEzOTUwLCJleHAiOjE3ODkwMDAzNTB9.IPqn5otDsI78GRTjBq9ft4XE9tZG33_lNyVuC2Y099w",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"nameRace\": \"La Gran Carrera de Las Palmas\",\r\n    \"description\": \"Camellos y enanos compitiendo a muerte\",\r\n    \"scheduledAt\": \"2026-12-31T15:00:00\",\r\n    \"startLocation\": \"Portería Zúñiga\",\r\n    \"endLocation\": \"Campus Alto de Las Palmas\",\r\n    \"distanceMeters\": 1000,\r\n    \"maxParticipants\": 10,\r\n    \"raceType\": \"MIXED\",\r\n    \"registrationDeadline\": \"2026-12-30T23:59:00\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/races",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "races"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8080/api/races/1/registrations",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbl9hYmFuZG9uYWRvIiwiaWF0IjoxNzg4OTEzOTUwLCJleHAiOjE3ODkwMDAzNTB9.IPqn5otDsI78GRTjBq9ft4XE9tZG33_lNyVuC2Y099w",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"competitorId\": 1,\r\n    \"startingPosition\": 1,\r\n    \"notes\": \"El camello Byte está listo para correr\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/races/1/registrations",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "races",
+            "1",
+            "registrations"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:8080/api/races/1/results",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbl9hYmFuZG9uYWRvIiwiaWF0IjoxNzg4OTEzOTUwLCJleHAiOjE3ODkwMDAzNTB9.IPqn5otDsI78GRTjBq9ft4XE9tZG33_lNyVuC2Y099w",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"registrationId\": 1,\r\n    \"finalPosition\": 1,\r\n    \"completionTimeSeconds\": 120.5,\r\n    \"penaltyTimeSeconds\": 0.0,\r\n    \"status\": \"FINISHED\",\r\n    \"notes\": \"Byte cruzó la meta sin problemas.\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/races/1/results",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "races",
+            "1",
+            "results"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

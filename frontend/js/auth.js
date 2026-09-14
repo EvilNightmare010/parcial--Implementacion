@@ -1,13 +1,9 @@
 /**
  * AUTH.js — sesión del usuario.
- *
- * ⚠️ IMPORTANTE: ajusta los nombres de campo (res.token, res.role, res.username)
- * para que coincidan EXACTAMENTE con el JSON que devuelve el endpoint
- * POST /api/auth/login de tu backend.
  */
 const ROLES = {
-  ADMIN: "ADMINISTRATOR",     // ajusta si tu backend usa otro nombre, ej. "ADMIN"
-  ORGANIZER: "RACE_ORGANIZER", // ej. "ORGANIZER"
+  ADMIN: "ADMINISTRATOR",     
+  ORGANIZER: "RACE_ORGANIZER", 
   VIEWER: "VIEWER",
 };
 
@@ -36,11 +32,49 @@ const Auth = {
   },
   async login(username, password) {
     const res = await API.post("/auth/login", { username, password });
-    // 👇 AJUSTA estos nombres de campo según la respuesta real del backend
-    this.setSession(res.token, {
+    
+    const token = res.token || res.jwt; 
+    let realRole = res.role || res.userRole;
+
+    // 1. Intentar extraer del token JWT si el backend no lo mandó suelto
+    if (!realRole && token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        realRole = payload.role || payload.roles || payload.authorities;
+        if (Array.isArray(realRole)) realRole = realRole[0];
+      } catch (e) {
+        console.error("No se pudo decodificar el JWT para extraer el rol", e);
+      }
+    }
+
+    // 2. Normalización de formato
+    if (typeof realRole === 'string') {
+      if (realRole.startsWith('ROLE_')) realRole = realRole.replace('ROLE_', '');
+      realRole = realRole.toUpperCase();
+    }
+
+    // 3. Mapeo a los roles oficiales de la aplicación
+    if (realRole === "ADMIN" || realRole === "ADMINISTRATOR") {
+      realRole = "ADMINISTRATOR";
+    } else if (realRole === "ORGANIZER" || realRole === "RACE_ORGANIZER") {
+      realRole = "RACE_ORGANIZER";
+    } else {
+      // 4. Si el backend no envía rol, lo deducimos por el nombre de usuario
+      const lowerUser = username.toLowerCase();
+      if (lowerUser.includes("admin")) {
+        realRole = "ADMINISTRATOR";
+      } else if (lowerUser.includes("organizer") || lowerUser.includes("org")) {
+        realRole = "RACE_ORGANIZER";
+      } else {
+        realRole = "VIEWER";
+      }
+    }
+
+    this.setSession(token, {
       username: res.username || username,
-      role: res.role,
+      role: realRole,
     });
+    
     return res;
   },
 };

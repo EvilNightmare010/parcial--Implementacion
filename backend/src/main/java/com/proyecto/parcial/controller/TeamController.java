@@ -29,8 +29,19 @@ public class TeamController {
         return ResponseEntity.ok(teamService.getAllTeams());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Team> getTeamById(@PathVariable Long id) {
+        return ResponseEntity.ok(teamService.getTeamById(id));
+    }
+
     @PostMapping("/{teamId}/members/{competitorId}")
     public ResponseEntity<TeamMember> addMember(@PathVariable Long teamId, @PathVariable Long competitorId) {
         return new ResponseEntity<>(teamService.addMemberToTeam(teamId, competitorId), HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/{teamId}/members/{competitorId}")
+    public ResponseEntity<Void> removeMember(@PathVariable Long teamId, @PathVariable Long competitorId) {
+        teamService.removeMemberFromTeam(teamId, competitorId);
+        return ResponseEntity.noContent().build();
     }
 }

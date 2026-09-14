@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -74,5 +75,24 @@ public class RaceRegistrationService {
                 .build();
 
         return registrationRepository.save(registration);
+    }
+
+    // NUEVO: Método para listar las inscripciones de una carrera
+    public List<RaceRegistration> getRegistrationsByRaceId(Long raceId) {
+        // Asegúrate de que tu RaceRegistrationRepository tenga este método
+        return registrationRepository.findByRaceId(raceId); 
+    }
+
+    public RaceRegistration decideRegistration(Long id, String action, String reason, String username) {
+        RaceRegistration reg = registrationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Inscripción no encontrada"));
+        
+        if ("approve".equalsIgnoreCase(action)) {
+            reg.setStatus(RegistrationStatus.APPROVED);
+        } else if ("reject".equalsIgnoreCase(action)) {
+            reg.setStatus(RegistrationStatus.REJECTED);
+            reg.setNotes(reason); // Guardamos el motivo del rechazo
+        }
+        return registrationRepository.save(reg);
     }
 }

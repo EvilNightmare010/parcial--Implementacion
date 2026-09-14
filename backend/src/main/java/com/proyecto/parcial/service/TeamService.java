@@ -43,9 +43,14 @@ public class TeamService {
         return teamRepository.findAll();
     }
 
-    public TeamMember addMemberToTeam(Long teamId, Long competitorId) {
-        Team team = teamRepository.findById(teamId)
+    // NUEVO: Obtener equipo por ID (soluciona error al abrir el modal de miembros)
+    public Team getTeamById(Long id) {
+        return teamRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Equipo no encontrado"));
+    }
+
+    public TeamMember addMemberToTeam(Long teamId, Long competitorId) {
+        Team team = getTeamById(teamId);
                 
         Competitor competitor = competitorRepository.findById(competitorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Competidor no encontrado"));
@@ -72,5 +77,21 @@ public class TeamService {
                 .build();
                 
         return teamMemberRepository.save(memberRecord);
+    }
+
+    // NUEVO: Quitar miembro del equipo (soluciona error al presionar el botón "Quitar")
+    public void removeMemberFromTeam(Long teamId, Long competitorId) {
+        Team team = getTeamById(teamId);
+        
+        Competitor competitor = competitorRepository.findById(competitorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Competidor no encontrado"));
+                
+        if (competitor.getTeam() == null || !competitor.getTeam().equals(team)) {
+            throw new BusinessRuleException("El competidor " + competitor.getName() + " no pertenece a este equipo.");
+        }
+
+        // Romper la relación quitando el equipo asignado al competidor
+        competitor.setTeam(null);
+        competitorRepository.save(competitor);
     }
 }

@@ -27,8 +27,8 @@ public class RaceService {
 
         // Regla de negocio: La carrera debe estar programada en el futuro
         if (request.getScheduledAt().isBefore(java.time.LocalDateTime.now())) {
-        throw new BusinessRuleException("La carrera debe estar programada para una fecha futura.");
-}
+            throw new BusinessRuleException("La carrera debe estar programada para una fecha futura.");
+        }
         // Regla de Negocio: La fecha límite de registro debe ser antes de la carrera
         if (request.getRegistrationDeadline().isAfter(request.getScheduledAt()) || 
             request.getRegistrationDeadline().isEqual(request.getScheduledAt())) {
@@ -68,5 +68,10 @@ public class RaceService {
 
     public List<Race> getAllRaces() {
         return raceRepository.findAll();
+    }
+
+    public Race getRaceById(Long id) {
+        return raceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Carrera no encontrada con el ID: " + id));
     }
 }

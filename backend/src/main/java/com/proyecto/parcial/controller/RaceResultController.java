@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/races")
@@ -25,5 +26,11 @@ public class RaceResultController {
             Principal principal) {
             
         return new ResponseEntity<>(resultService.recordResult(raceId, request, principal.getName()), HttpStatus.CREATED);
+    }
+
+    // NUEVO: Obtener los resultados de una carrera
+    @GetMapping("/{raceId}/results")
+    public ResponseEntity<List<RaceResult>> getResultsByRace(@PathVariable Long raceId) {
+        return ResponseEntity.ok(resultService.getResultsByRaceId(raceId));
     }
 }

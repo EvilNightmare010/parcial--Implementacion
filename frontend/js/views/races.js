@@ -27,7 +27,7 @@ const Races = (() => {
         <table>
           <thead><tr><th>Nombre</th><th>Tipo</th><th>Fecha</th><th>Distancia</th><th>Estado</th><th></th></tr></thead>
           <tbody>${list.map((r) => {
-            const id = r.id_race ?? r.id;
+            const id = r.id ?? r.raceId ?? r.id_race ?? Object.values(r)[0]; 
             return `<tr>
               <td>${r.name_race ?? r.nameRace ?? r.name}</td>
               <td>${r.race_type ?? r.raceType}</td>

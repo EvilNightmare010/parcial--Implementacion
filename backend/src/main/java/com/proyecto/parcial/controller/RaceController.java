@@ -21,12 +21,16 @@ public class RaceController {
 
     @PostMapping
     public ResponseEntity<Race> createRace(@Valid @RequestBody RaceRequest request, Principal principal) {
-        // principal.getName() nos da el 'username' del usuario autenticado
         return new ResponseEntity<>(raceService.createRace(request, principal.getName()), HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<Race>> getAllRaces() {
         return ResponseEntity.ok(raceService.getAllRaces());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Race> getRaceById(@PathVariable Long id) {
+        return ResponseEntity.ok(raceService.getRaceById(id));
     }
 }
